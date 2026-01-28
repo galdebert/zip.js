@@ -40,9 +40,11 @@
     "build-doc-markdown": "npx typedoc --plugin typedoc-plugin-markdown --out ./docs",
     "test-deno": "cd ./tests && deno test --allow-read ./deno-runner.js",
     "test-node": "cd ./tests && node ./node-runner.js",
+    "test-node-perf": "cd ./tests-perf && node ./node-runner.js",
     "test-bun": "cd ./tests && bun test ./bun-runner.js",
     "test-firefox": "firefox http://localhost:8081/tests/ & npx http-server -p=8081 & wait $!",
-    "test-chrome": "google-chrome http://localhost:8081/tests/ & npx http-server -p=8081 & wait $!"
+    "test-chrome": "google-chrome http://localhost:8081/tests/ & npx http-server -p=8081 & wait $!",
+    "test-browser": "npx http-server -p=8081 -c-1"
   },
   "main": "./index.cjs",
   "module": "./index.js",

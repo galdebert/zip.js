@@ -7,9 +7,13 @@ export default [
 			".git/",
 			"dist/",
 			"**/*-inline.js",
+			"**/*-inline-native.js",
+			"**/*-inline-wasm.js",
 			"tests/vendor/*.js",
 			"index.cjs",
-			"index.min.js"
+			"index.min.js",
+			"index-native.cjs",
+			"**/*.min.js"
 		]
 	},
 	js.configs.recommended,
