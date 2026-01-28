@@ -45,12 +45,13 @@ async function test() {
 
 	/** @type {PerfConfig[]} */
 	const cfgs = [
-		{ ...baseCfg, level: 1, useWebWorkers: true },
-		{ ...baseCfg, level: 1, useWebWorkers: false },
+		// careful, configure() won't change the value if it's undefined, so we must be explicit
+		{ ...baseCfg, level: 1, useWebWorkers: true , useCompressionStream: true  },
+		{ ...baseCfg, level: 1, useWebWorkers: false, useCompressionStream: true  },
 		{ ...baseCfg, level: 1, useWebWorkers: false, useCompressionStream: false },
 
-		{ ...baseCfg, level: 6, useWebWorkers: true },
-		{ ...baseCfg, level: 6, useWebWorkers: false },
+		{ ...baseCfg, level: 6, useWebWorkers: true , useCompressionStream: true  },
+		{ ...baseCfg, level: 6, useWebWorkers: false, useCompressionStream: true  },
 		{ ...baseCfg, level: 6, useWebWorkers: false, useCompressionStream: false },
 	];
 
