@@ -47,9 +47,11 @@ async function test() {
 	const cfgs = [
 		{ ...baseCfg, level: 1, useWebWorkers: true },
 		{ ...baseCfg, level: 1, useWebWorkers: false },
+		{ ...baseCfg, level: 1, useWebWorkers: false, useCompressionStream: false },
+
 		{ ...baseCfg, level: 6, useWebWorkers: true },
 		{ ...baseCfg, level: 6, useWebWorkers: false },
-		//{ ...baseCfg, level: 6, useWebWorkers: true, useCompressionStream: false },
+		{ ...baseCfg, level: 6, useWebWorkers: false, useCompressionStream: false },
 	];
 
 	for (const cfg of cfgs) {
