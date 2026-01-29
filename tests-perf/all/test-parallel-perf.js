@@ -1,7 +1,6 @@
 /* global Blob */
 // @ts-check
 import * as zipdotjs from "../../index.js";
-import Worker from "web-worker";
 
 const _USE_WEB_WORKER_ON_NODEJS = true;
 const _TEST_UNZIP = false;
@@ -9,23 +8,27 @@ const _TEST_UNZIP = false;
 // eslint-disable-next-line no-console
 const console_log = console.log;
 
-// navigator.hardwareConcurrency
-let hardwareConcurrency = undefined;
-// eslint-disable-next-line no-undef
-if (typeof navigator !== "undefined" && navigator.hardwareConcurrency) {
-	// eslint-disable-next-line no-undef
-	hardwareConcurrency = navigator.hardwareConcurrency;
-}
-console_log(`NODEJS: navigator.hardwareConcurrency = ${hardwareConcurrency}`);
+console_log(
+	`navigator.hardwareConcurrency = ${globalThis?.navigator?.hardwareConcurrency}`,
+);
 
 // How to use Web Workers on Node.js ?
 // https://github.com/gildas-lormeau/zip.js/discussions/635
-if (typeof globalThis.Worker === "undefined") {
-	if (_USE_WEB_WORKER_ON_NODEJS) {
-		console_log("NODEJS: we DO use web-worker");
-		globalThis.Worker = Worker;
-	} else {
-		console_log("NODEJS: we do NOT use web-worker");
+
+async function setupWebWorkerOnNodejs() {
+	if (typeof globalThis.Worker === "undefined") {
+		if (_USE_WEB_WORKER_ON_NODEJS) {
+			console_log("NODEJS: we DO use web-worker");
+			try {
+				const Worker = await import("web-worker");
+				globalThis.Worker = Worker?.default ?? Worker;
+			} catch (err) {
+				console_log(`Failed to import web-worker: ${err}`);
+				throw err;
+			}
+		} else {
+			console_log("NODEJS: we do NOT use web-worker");
+		}
 	}
 }
 
@@ -61,6 +64,8 @@ const PerfConfig = {
 };
 
 async function test() {
+	await setupWebWorkerOnNodejs();
+
 	/** @type {PerfConfig} */
 	const baseCfg = {
 		baseName: "20 x 20MiB",
