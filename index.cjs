@@ -163,6 +163,7 @@ function getChunkSize(config) {
 	return Math.max(config.chunkSize, MINIMUM_CHUNK_SIZE);
 }
 
+// configure is incremental, it applies (not undefined) configuration props to the current global config
 function configure(configuration) {
 	const {
 		baseURI,

@@ -1,18 +1,46 @@
 /* global Blob */
 // @ts-check
 import * as zipdotjs from "../../index.js";
+import Worker from "web-worker";
+
+const _DO_USE_WORKED_ON_NODEJS = true;
+const _TEST_UNZIP = false;
+
+// eslint-disable-next-line no-console
+const console_log = console.log;
+
+// navigator.hardwareConcurrency
+let hardwareConcurrency = undefined;
+// eslint-disable-next-line no-undef
+if (typeof navigator !== "undefined" && navigator.hardwareConcurrency) {
+	// eslint-disable-next-line no-undef
+	hardwareConcurrency = navigator.hardwareConcurrency;
+}
+console_log(`NODEJS: navigator.hardwareConcurrency = ${hardwareConcurrency}`);
+
+// How to use Web Workers on Node.js ?
+// https://github.com/gildas-lormeau/zip.js/discussions/635
+if (typeof globalThis.Worker === "undefined") {
+	if (_DO_USE_WORKED_ON_NODEJS) {
+		console_log("NODEJS: we DO use web-worker");
+		globalThis.Worker = Worker;
+	} else {
+		console_log("NODEJS: we do NOT use web-worker");
+	}
+}
 
 export { test };
 
 /**
  * @typedef {{
+ *   baseName: string,
  *   inputType: 'Uint8Array'|'Blob'|undefined,
  *   outputType: 'Uint8Array'|'Blob'|undefined,
  *   entrySize: number,
  *   entryCount: number,
- *   useWebWorkers: boolean|undefined,
- *   maxWorkers: number|undefined,
- *   useCompressionStream: boolean|undefined,
+ *   useWebWorkers: boolean,
+ *   maxWorkers: number,
+ *   useCompressionStream: boolean,
  *   chunkSize: number|undefined,
  *   level: number|undefined,
  *   keepOrder: boolean|undefined,
@@ -22,9 +50,21 @@ export { test };
  * @typedef {{name: string; data: Uint8Array|Blob}} Input
  */
 
+const PerfConfig = {
+	/** @param {PerfConfig} cfg */
+	toStr(cfg) {
+		const use = cfg.useWebWorkers.toString().padEnd(5);
+		const max = cfg.maxWorkers.toString().padStart(2);
+		//const nat = cfg.useCompressionStream.toString().padEnd(5);
+		return `${cfg.baseName} level=${cfg.level} useWebWorkers=${use} maxWorkers=${max}`; // useCompressionStream=${nat}
+	},
+};
+
 async function test() {
 	/** @type {PerfConfig} */
 	const baseCfg = {
+		baseName: "20 x 20MiB",
+
 		// in out
 		entrySize: 1024 * 1024 * 20,
 		entryCount: 20,
@@ -32,9 +72,9 @@ async function test() {
 		outputType: undefined, // "Uint8Array" | "Blob",  undefined means "Uint8Array"
 
 		// configure
-		useWebWorkers: undefined,
-		maxWorkers: undefined,
-		useCompressionStream: undefined,
+		useWebWorkers: true,
+		maxWorkers: 16,
+		useCompressionStream: true,
 		chunkSize: undefined,
 
 		// ZipWriter ctr
@@ -43,17 +83,32 @@ async function test() {
 		bufferedWrite: undefined,
 	};
 
-	/** @type {PerfConfig[]} */
-	const cfgs = [
-		// careful, configure() won't change the value if it's undefined, so we must be explicit
-		{ ...baseCfg, level: 1, useWebWorkers: true , useCompressionStream: true  },
-		{ ...baseCfg, level: 1, useWebWorkers: false, useCompressionStream: true  },
-		{ ...baseCfg, level: 1, useWebWorkers: false, useCompressionStream: false },
+	// IMPORTANT NOTES
+	// - zipdotjs.configure() is incremental, it applies (not undefined) configuration props to the current global config
+	//   so we have to set all props we change for each test
+	// - useCompressionStream only works in practice when level=6
+	// - maxWorkers should NOT matter when useWebWorkers: false, but somehow it does TBC
 
-		{ ...baseCfg, level: 6, useWebWorkers: true , useCompressionStream: true  },
-		{ ...baseCfg, level: 6, useWebWorkers: false, useCompressionStream: true  },
-		{ ...baseCfg, level: 6, useWebWorkers: false, useCompressionStream: false },
-	];
+	/** @type {PerfConfig[]} */
+	const cfgs = [];
+
+	const useWebWorkerss = [false, true];
+	const levels = [5, 6];
+	const maxWorkerss = [1, 2, 4, 8, 16];
+
+	for (let level of levels) {
+		for (let useWebWorkers of useWebWorkerss) {
+			for (let maxWorkers of maxWorkerss) {
+				cfgs.push({
+					...baseCfg,
+					useWebWorkers,
+					maxWorkers,
+					level,
+					useCompressionStream: true,
+				});
+			}
+		}
+	}
 
 	for (const cfg of cfgs) {
 		/** @type {Input[]} */
@@ -69,6 +124,13 @@ async function test() {
 		const zip_t0 = Date.now();
 		const zipped = await zip(cfg, inputs);
 		const zip_dt = Date.now() - zip_t0;
+
+		if (!_TEST_UNZIP) {
+			const zip_sec = (zip_dt / 1000).toFixed(2);
+			const result = `${PerfConfig.toStr(cfg)}: zip=${zip_sec}s`;
+			console_log(result);
+			continue;
+		}
 
 		let zippedByteLength = 0;
 		if (zipped instanceof Uint8Array) {
@@ -86,13 +148,8 @@ async function test() {
 		const zip_sec = (zip_dt / 1000).toFixed(2);
 		const unzip_sec = (unzip_dt / 1000).toFixed(2);
 		const zippedMiB = (zippedByteLength / (1024 * 1024)).toFixed(2);
-		const pov = {
-			cfg,
-			results: { zip_sec, unzip_sec, zippedMiB },
-		};
-
-		// eslint-disable-next-line no-console
-		console.log(JSON.stringify(pov, null, 2));
+		const result = `${PerfConfig.toStr(cfg)}: zip=${zip_sec}s unzip=${unzip_sec}s size=${zippedMiB}MiB`;
+		console_log(result);
 	}
 }
 

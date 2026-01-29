@@ -1,0 +1,9 @@
+// https://prettier.io/docs/configuration
+// https://www.schemastore.org/prettierrc.json
+{
+  "useTabs": true,
+  "tabWidth": 2,
+  "singleQuote": false,
+  "semi": true,
+  "endOfLine": "lf"
+}

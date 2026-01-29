@@ -41,6 +41,7 @@
     "test-deno": "cd ./tests && deno test --allow-read ./deno-runner.js",
     "test-node": "cd ./tests && node ./node-runner.js",
     "test-node-perf": "cd ./tests-perf && node ./node-runner.js",
+    "test-node-perf-inspect": "cd ./tests-perf && node --inspect ./node-runner.js",
     "test-bun": "cd ./tests && bun test ./bun-runner.js",
     "test-firefox": "firefox http://localhost:8081/tests/ & npx http-server -p=8081 & wait $!",
     "test-chrome": "google-chrome http://localhost:8081/tests/ & npx http-server -p=8081 & wait $!",
@@ -162,6 +163,7 @@
     "http-server": "^14.1.1",
     "rollup": "^4.57.0",
     "typedoc": "^0.28.16",
-    "typedoc-plugin-markdown": "^4.9.0"
+    "typedoc-plugin-markdown": "^4.9.0",
+    "web-worker": "1.5.0"
   }
 }
