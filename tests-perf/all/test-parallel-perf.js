@@ -3,7 +3,7 @@
 import * as zipdotjs from "../../index.js";
 import Worker from "web-worker";
 
-const _DO_USE_WORKED_ON_NODEJS = true;
+const _USE_WEB_WORKER_ON_NODEJS = true;
 const _TEST_UNZIP = false;
 
 // eslint-disable-next-line no-console
@@ -21,7 +21,7 @@ console_log(`NODEJS: navigator.hardwareConcurrency = ${hardwareConcurrency}`);
 // How to use Web Workers on Node.js ?
 // https://github.com/gildas-lormeau/zip.js/discussions/635
 if (typeof globalThis.Worker === "undefined") {
-	if (_DO_USE_WORKED_ON_NODEJS) {
+	if (_USE_WEB_WORKER_ON_NODEJS) {
 		console_log("NODEJS: we DO use web-worker");
 		globalThis.Worker = Worker;
 	} else {
