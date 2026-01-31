@@ -2,7 +2,43 @@
 // @ts-check
 import * as zipdotjs from "../../index.js";
 
-const _USE_WEB_WORKER_ON_NODEJS = true;
+/*
+NOTES
+
+zipdotjs.configure() is incremental, it applies (not undefined) configuration props to the current global config.
+So make sure to set all props you change for each test.
+
+useCompressionStream
+- means use CompressionStream
+  - https://nodejs.org/docs/latest-v25.x/api/webstreams.html#class-compressionstream
+	- https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream
+- will be force to false when level !== 6
+- will ignore chunkSize and level options when true
+
+maxWorkers
+- controls how many entries are processed concurrently
+- so even if useWebWorkers is false, some multithreading may happen, in particular when useCompressionStream=true
+  because the the CompressionStream implementation may use multiple threads internally (4 by default on NODEJS).
+	TODO try using `UV_THREADPOOL_SIZE=8 node app.js` to increase the thread pool size on NODEJS
+	see https://github.com/nodejs/node/blob/main/doc/api/zlib.md#threadpool-usage-and-performance-considerations
+
+useWebWorkers
+- controls if a Worker is spawned for each entry 
+- on NODEJS we can use the web-worker package to have Worker support
+
+How do worker threads and libuv threadpool work together on Node.js?
+Worker threads run a separate Node instance (separate libuv loop), so libuv's threadpool is created per worker. UV_THREADPOOL_SIZE (inherited from the environment) determines the size for each worker's pool.
+*/
+
+let USE_WEB_WORKER_ON_NODEJS = false;
+(() => {
+	// eslint-disable-next-line no-undef
+	const envvar = process?.env?.USE_WEB_WORKER_ON_NODEJS;
+	if (envvar !== undefined) {
+		USE_WEB_WORKER_ON_NODEJS = !!envvar;
+	}
+})();
+
 const _TEST_UNZIP = false;
 
 // eslint-disable-next-line no-console
@@ -17,7 +53,7 @@ console_log(
 
 async function setupWebWorkerOnNodejs() {
 	if (typeof globalThis.Worker === "undefined") {
-		if (_USE_WEB_WORKER_ON_NODEJS) {
+		if (USE_WEB_WORKER_ON_NODEJS) {
 			console_log("NODEJS: we DO use web-worker");
 			try {
 				const Worker = await import("web-worker");
@@ -36,7 +72,6 @@ export { test };
 
 /**
  * @typedef {{
- *   baseName: string,
  *   inputType: 'Uint8Array'|'Blob'|undefined,
  *   outputType: 'Uint8Array'|'Blob'|undefined,
  *   entrySize: number,
@@ -48,28 +83,51 @@ export { test };
  *   level: number|undefined,
  *   keepOrder: boolean|undefined,
  *   bufferedWrite: boolean|undefined,
- * }} PerfConfig
+ * }} Cfg
  *
  * @typedef {{name: string; data: Uint8Array|Blob}} Input
  */
 
-const PerfConfig = {
-	/** @param {PerfConfig} cfg */
-	toStr(cfg) {
+const Cfg = {
+	/** @param {Cfg} cfg */
+	check: (cfg) => {
+		if (cfg.useCompressionStream) {
+			if (cfg.level !== 6) {
+				throw new Error(
+					"cfg.useCompressionStream and cfg.level!=6 are incompatible",
+				);
+			}
+			if (cfg.chunkSize !== undefined) {
+				console_log(
+					"WARNING: chunkSize is ignored when useCompressionStream=true",
+				);
+			}
+		}
+
+		if (cfg.useWebWorkers) {
+			if (typeof globalThis.Worker === "undefined") {
+				throw new Error(
+					"cfg.useWebWorkers=true but globalThis.Worker is undefined",
+				);
+			}
+		}
+	},
+
+	/** @param {Cfg} cfg */
+	toStr: (cfg) => {
+		const name = `${cfg.entryCount} x ${cfg.entrySize / (1024 * 1024)}MiB`;
+		const nat = cfg.useCompressionStream.toString().padEnd(5);
 		const use = cfg.useWebWorkers.toString().padEnd(5);
 		const max = cfg.maxWorkers.toString().padStart(2);
-		//const nat = cfg.useCompressionStream.toString().padEnd(5);
-		return `${cfg.baseName} level=${cfg.level} useWebWorkers=${use} maxWorkers=${max}`; // useCompressionStream=${nat}
+		return `${name} useCompressionStream=${nat} useWebWorkers=${use} maxWorkers=${max}`;
 	},
 };
 
 async function test() {
 	await setupWebWorkerOnNodejs();
 
-	/** @type {PerfConfig} */
+	/** @type {Cfg} */
 	const baseCfg = {
-		baseName: "20 x 20MiB",
-
 		// in out
 		entrySize: 1024 * 1024 * 20,
 		entryCount: 20,
@@ -78,7 +136,7 @@ async function test() {
 
 		// configure
 		useWebWorkers: true,
-		maxWorkers: 16,
+		maxWorkers: 1,
 		useCompressionStream: true,
 		chunkSize: undefined,
 
@@ -88,29 +146,26 @@ async function test() {
 		bufferedWrite: undefined,
 	};
 
-	// IMPORTANT NOTES
-	// - zipdotjs.configure() is incremental, it applies (not undefined) configuration props to the current global config
-	//   so we have to set all props we change for each test
-	// - useCompressionStream only works in practice when level=6
-	// - maxWorkers should NOT matter when useWebWorkers: false, but somehow it does TBC
-
-	/** @type {PerfConfig[]} */
+	/** @type {Cfg[]} */
 	const cfgs = [];
 
-	const useWebWorkerss = [false, true];
-	const levels = [5, 6];
+	//
+	const useCompressionStreams = [true]; // [false, true];
+	const useWebWorkerss = [false]; // [false, true];
 	const maxWorkerss = [1, 2, 4, 8, 16];
 
-	for (let level of levels) {
+	for (let useCompressionStream of useCompressionStreams) {
 		for (let useWebWorkers of useWebWorkerss) {
 			for (let maxWorkers of maxWorkerss) {
-				cfgs.push({
+				/** @type {Cfg} */
+				const cfg = {
 					...baseCfg,
 					useWebWorkers,
 					maxWorkers,
-					level,
-					useCompressionStream: true,
-				});
+					useCompressionStream,
+				};
+				Cfg.check(cfg);
+				cfgs.push(cfg);
 			}
 		}
 	}
@@ -132,7 +187,7 @@ async function test() {
 
 		if (!_TEST_UNZIP) {
 			const zip_sec = (zip_dt / 1000).toFixed(2);
-			const result = `${PerfConfig.toStr(cfg)}: zip=${zip_sec}s`;
+			const result = `${Cfg.toStr(cfg)}: zip=${zip_sec}s`;
 			console_log(result);
 			continue;
 		}
@@ -153,14 +208,14 @@ async function test() {
 		const zip_sec = (zip_dt / 1000).toFixed(2);
 		const unzip_sec = (unzip_dt / 1000).toFixed(2);
 		const zippedMiB = (zippedByteLength / (1024 * 1024)).toFixed(2);
-		const result = `${PerfConfig.toStr(cfg)}: zip=${zip_sec}s unzip=${unzip_sec}s size=${zippedMiB}MiB`;
+		const result = `${Cfg.toStr(cfg)}: zip=${zip_sec}s unzip=${unzip_sec}s size=${zippedMiB}MiB`;
 		console_log(result);
 	}
 }
 
 //--------------------------------------------------------------------------------------------------
 /**
- * @param {PerfConfig} cfg
+ * @param {Cfg} cfg
  * @param {Input[]} inputs
  */
 async function zip(cfg, inputs) {
@@ -186,7 +241,7 @@ async function zip(cfg, inputs) {
 
 //--------------------------------------------------------------------------------------------------
 /**
- * @param {PerfConfig} cfg
+ * @param {Cfg} cfg
  * @param {Uint8Array|Blob} zipped
  */
 async function unzip(cfg, zipped) {
