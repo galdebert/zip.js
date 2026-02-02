@@ -5,7 +5,7 @@
 import tests from "./tests-data.js";
 
 const table = document.createElement("table");
-const MAX_TESTS = 16;
+const MAX_TESTS = 1; // max test count running concurrently. Must be 1 when running perf tests
 let indexTest;
 for (indexTest = 0; indexTest < Math.min(MAX_TESTS, tests.length); indexTest++) {
 	const test = tests[indexTest];
