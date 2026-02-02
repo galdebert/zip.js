@@ -12,30 +12,30 @@ useCompressionStream
 - means use CompressionStream
   - https://nodejs.org/docs/latest-v25.x/api/webstreams.html#class-compressionstream
 	- https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream
-- will be force to false when level !== 6
+- will be forced to false when level !== 6
 - will ignore chunkSize and level options when true
 
 maxWorkers
 - controls how many entries are processed concurrently
 - so even if useWebWorkers is false, some multithreading may happen, in particular when useCompressionStream=true
   because the the CompressionStream implementation may use multiple threads internally (4 by default on NODEJS).
-	TODO try using `UV_THREADPOOL_SIZE=8 node app.js` to increase the thread pool size on NODEJS
 	see https://github.com/nodejs/node/blob/main/doc/api/zlib.md#threadpool-usage-and-performance-considerations
 
 useWebWorkers
-- controls if a Worker is spawned for each entry 
-- on NODEJS we can use the web-worker package to have Worker support
+- controls if a Worker is spawned for each entry concurrently processed
+- on NODEJS we can use the web-worker package to have WebWorker support
 
 How do worker threads and libuv threadpool work together on Node.js?
-Worker threads run a separate Node instance (separate libuv loop), so libuv's threadpool is created per worker. UV_THREADPOOL_SIZE (inherited from the environment) determines the size for each worker's pool.
+Worker threads run a separate Node instance (separate libuv loop), so libuv's threadpool is created per worker.
+UV_THREADPOOL_SIZE determines the size for each worker's pool.
 */
 
 let USE_WEB_WORKER_ON_NODEJS = false;
 (() => {
-	// eslint-disable-next-line no-undef
-	const envvar = process?.env?.USE_WEB_WORKER_ON_NODEJS;
-	if (envvar !== undefined) {
-		USE_WEB_WORKER_ON_NODEJS = !!envvar;
+	if (typeof process !== "undefined") {
+		// eslint-disable-next-line no-undef
+		const env_var = process?.env?.USE_WEB_WORKER_ON_NODEJS;
+		USE_WEB_WORKER_ON_NODEJS = env_var === "1" || env_var === "true";
 	}
 })();
 
