@@ -324,8 +324,8 @@ export const baseTestCase = {
 /**
  * @typedef {{
  *   baseTestCase: TestCase,
- *   useCompressionStreams: boolean[],
- *   useWebWorkerss: boolean[],
+ *   useCompressionStream: boolean,
+ *   useWebWorkers: boolean,
  *   concurrencies: number[],
  * }} CreateTestCasesOpts
  */
@@ -337,27 +337,25 @@ export const baseTestCase = {
  */
 export function createTestCases({
 	baseTestCase,
-	useCompressionStreams,
-	useWebWorkerss,
+	useCompressionStream,
+	useWebWorkers,
 	concurrencies,
 }) {
 	/** @type {TestCase[]} */
 	const testCases = [];
 
-	for (let useCompressionStream of useCompressionStreams) {
-		for (let useWebWorkers of useWebWorkerss) {
-			for (let concurrency of concurrencies) {
-				/** @type TestCase */
-				const testCase = {
-					...baseTestCase,
-					useWebWorkers,
-					concurrency,
-					useCompressionStream,
-				};
-				testCases.push(testCase);
-			}
-		}
+
+	for (let concurrency of concurrencies) {
+		/** @type TestCase */
+		const testCase = {
+			...baseTestCase,
+			useWebWorkers,
+			concurrency,
+			useCompressionStream,
+		};
+		testCases.push(testCase);
 	}
+
 
 	return testCases;
 }

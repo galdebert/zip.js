@@ -1,13 +1,10 @@
 /* global TransformStream */
 // @ts-check
-//
-// WE SHOULD NOT MIX import "../../index-native.js" and import "../../index.js" in the same non isolated tests suite
-// BECAUSE THEIR TOP LEVEL INIT CODE WILL INTERFERE
-//
 
-import * as zipdotjs from "../../index-native.js";
-import { makeCompressionStream, makeDecompressionStream } from "compression-streams-polyfill/ponyfill"; // wraps fflate
 import { baseTestCase, createTestCases, runTests } from "./perf-utils.js";
+
+import { makeCompressionStream, makeDecompressionStream } from "compression-streams-polyfill/ponyfill"; // wraps fflate
+import * as zipdotjs from "../../index-native.js";
 
 const CompressionStream = makeCompressionStream(TransformStream);
 const DecompressionStream = makeDecompressionStream(TransformStream);
@@ -26,12 +23,11 @@ zipdotjs.configure({
 /** @type {import("./perf-utils.js").TestCase[]} */
 const testCases = createTestCases({
 	baseTestCase: baseTestCase,
-	useCompressionStreams: [false],
-	useWebWorkerss: [true],
+	useCompressionStream: false,
+	useWebWorkers: true,
 	concurrencies: [1, 4, 8],
 });
-const name = "fflate-workers";
 
 export function test() {
-	return runTests(zipdotjs, name, testCases);
+	return runTests(zipdotjs, "fflate-workers", testCases);
 }
