@@ -1,11 +1,11 @@
 // @ts-check
 
-import { baseTestCase, createTestCases, runTests } from "./perf-utils.js";
+import { baseTestCase, createTestCases, runTests } from "../utils/perf-utils.js";
 
 // default init zipdotjs is ./lib/zip-fs-wasm.js ie web-worker-inline-wasm.js and zip-fs-core-wasm.js
 import * as zipdotjs from "../../index.js";
 
-/** @type {import("./perf-utils.js").TestCase[]} */
+/** @type {import("../utils/perf-utils.js").TestCase[]} */
 const testCases = createTestCases({
 	baseTestCase,
 	useCompressionStream: false,

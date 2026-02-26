@@ -4,12 +4,12 @@
 // BECAUSE THEIR TOP LEVEL INIT CODE WILL INTERFERE
 //
 
-import { baseTestCase, createTestCases,	runTests } from "./perf-utils.js";
+import { baseTestCase, createTestCases,	runTests } from "../utils/perf-utils.js";
 
 // "index-native.js" uses "web-worker-inline-native.js" and "zip-fs-core-native.js"
 import * as zipdotjs from "../../index-native.js";
 
-/** @type {import("./perf-utils.js").TestCase[]} */
+/** @type {import("../utils/perf-utils.js").TestCase[]} */
 const testCases = createTestCases({
 	baseTestCase: baseTestCase,
 	useCompressionStream: false,

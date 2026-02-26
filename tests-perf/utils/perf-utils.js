@@ -10,11 +10,11 @@ export const console_log = console.log;
  *
  * @typedef {import("../../index.js")} Zipdotjs
  *
- * @typedef {import("../../index.d.ts").BlobReader} BlobReader
- * @typedef {import("../../index.d.ts").BlobWriter} BlobWriter
- * @typedef {import("../../index.d.ts").Uint8ArrayReader} Uint8ArrayReader
- * @typedef {import("../../index.d.ts").Uint8ArrayWriter} Uint8ArrayWriter
- * @typedef {import("../../index.d.ts").Configuration} Configuration
+ * @typedef {import("../../index").BlobReader} BlobReader
+ * @typedef {import("../../index").BlobWriter} BlobWriter
+ * @typedef {import("../../index").Uint8ArrayReader} Uint8ArrayReader
+ * @typedef {import("../../index").Uint8ArrayWriter} Uint8ArrayWriter
+ * @typedef {import("../../index").Configuration} Configuration
  *
  * @typedef {{
  *   inputType: 'Uint8Array'|'Blob'|undefined,
@@ -140,58 +140,17 @@ export async function testPerf(testCfg, testCases, log) {
 //--------------------------------------------------------------------------------------------------
 // How to use Web Workers on Node.js ?
 // https://github.com/gildas-lormeau/zip.js/discussions/635
-/** @param {boolean} useWebWorkerOnNodejs */
-export async function setupWebWorkerOnNodejs(useWebWorkerOnNodejs) {
+export async function setupWebWorkerOnNodejs() {
 	if (typeof globalThis.Worker === "undefined") {
-		if (useWebWorkerOnNodejs) {
-			console_log("NODEJS: we DO use web-worker");
-			try {
-				const Worker = await import("web-worker");
-				globalThis.Worker = Worker?.default ?? Worker;
-			} catch (err) {
-				console_log(`Failed to import web-worker: ${err}`);
-				throw err;
-			}
-		} else {
-			console_log("NODEJS: we do NOT use web-worker");
+		try {
+			const Worker = await import("web-worker");
+			globalThis.Worker = Worker?.default ?? Worker;
+		} catch (err) {
+			console_log(`Failed to import web-worker: ${err}`);
+			throw err;
 		}
 	}
 }
-
-//--------------------------------------------------------------------------------------------------
-// /**
-//  * @param {string} name
-//  * @param {boolean} defaultValue
-//  * @returns {boolean}
-//  */
-// function getEnvVarBoolean(name, defaultValue) {
-// 	if (typeof process !== "undefined") {
-// 		// eslint-disable-next-line no-undef
-// 		const env_var = process?.env?.[name];
-// 		if (env_var === "1" || env_var === "true") {
-// 			return true;
-// 		} else if (env_var === "0" || env_var === "false") {
-// 			return false;
-// 		}
-// 	}
-// 	return defaultValue;
-// }
-
-/**
- * @param {string} name
- * @param {string} defaultValue
- * @returns {string}
- */
-// function getEnvVarString(name, defaultValue) {
-// 	if (typeof process !== "undefined") {
-// 		// eslint-disable-next-line no-undef
-// 		const env_var = process?.env?.[name];
-// 		if (env_var !== undefined) {
-// 			return env_var;
-// 		}
-// 	}
-// 	return defaultValue;
-// }
 
 //--------------------------------------------------------------------------------------------------
 /**
@@ -374,9 +333,9 @@ export function createTestCases({
 export function logConfigURIs() {
 	/** @type {any} */
 	const c = getConfiguration();
-	const wasmURI = typeof c.wasmURI === "function" ? c.wasmURI().slice(0, 60) + "...": c.wasmURI;
-	const workerURI = typeof c.workerURI === "function" ? c.workerURI().slice(0, 60) + "...": c.workerURI;
-	return JSON.stringify({wasmURI, workerURI}, null, 2);
+	const wasmURI = typeof c.wasmURI === "function" ? c.wasmURI().slice(0, 60) + "..." : c.wasmURI;
+	const workerURI = typeof c.workerURI === "function" ? c.workerURI().slice(0, 60) + "..." : c.workerURI;
+	return JSON.stringify({ wasmURI, workerURI }, null, 2);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -392,7 +351,7 @@ export async function runTests(zipdotjs, name, testCases) {
 	log.push(name);
 
 	//log.push(logConfigURIs());
-	
+
 	await testPerf(
 		{
 			zipdotjs,

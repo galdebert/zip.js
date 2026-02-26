@@ -40,13 +40,16 @@
     "build-doc-markdown": "npx typedoc --plugin typedoc-plugin-markdown --out ./docs",
     "test-deno": "cd ./tests && deno test --allow-read ./deno-runner.js",
     "test-node": "cd ./tests && node ./node-runner.js",
-    "test-node-perf": "cd ./tests-perf && node ./node-runner.js",
-    "test-node-perf-uv1": "cd ./tests-perf && UV_THREADPOOL_SIZE=1 node ./node-runner.js",
-    "test-node-perf-uv2": "cd ./tests-perf && UV_THREADPOOL_SIZE=2 node ./node-runner.js",
-    "test-node-perf-uv4": "cd ./tests-perf && UV_THREADPOOL_SIZE=4 node ./node-runner.js",
-    "test-node-perf-uv8": "cd ./tests-perf && UV_THREADPOOL_SIZE=8 node  ./node-runner.js",
-    "test-node-perf-uv16": "cd ./tests-perf && UV_THREADPOOL_SIZE=16 node ./node-runner.js",
-    "test-node-perf-inspect": "cd ./tests-perf && node --inspect ./node-runner.js",
+
+    "test-node-perf-all": "cd ./tests-perf && node ./node/run.js compstream-noworkers && node ./node/run.js compstream && node ./node/run.js purejs && node ./node/run.js wasm",
+
+    "test-node-perf": "cd ./tests-perf && node ./node/run.js",
+    "test-node-perf-uv1": "cd ./tests-perf && UV_THREADPOOL_SIZE=1 node ./node/run.js",
+    "test-node-perf-uv2": "cd ./tests-perf && UV_THREADPOOL_SIZE=2 node ./node/run.js",
+    "test-node-perf-uv4": "cd ./tests-perf && UV_THREADPOOL_SIZE=4 node ./node/run.js",
+    "test-node-perf-uv8": "cd ./tests-perf && UV_THREADPOOL_SIZE=8 node  ./node/run.js",
+    "test-node-perf-inspect": "cd ./tests-perf && node --inspect ./node/run.js",
+
     "test-bun": "cd ./tests && bun test ./bun-runner.js",
     "test-firefox": "firefox http://localhost:8081/tests/ & npx http-server -p=8081 & wait $!",
     "test-chrome": "google-chrome http://localhost:8081/tests/ & npx http-server -p=8081 & wait $!",

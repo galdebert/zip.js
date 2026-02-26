@@ -44,7 +44,7 @@ function addTest(test) {
 	link.textContent = test.title;
 	link.target = test.script;
 	row.dataset.script = test.script;
-	link.href = iframe.src = "/tests-perf/scripts/loader.html#" + encodeURIComponent(JSON.stringify({ script: test.script }));
+	link.href = iframe.src = "/tests-perf/tests/loader.html#" + encodeURIComponent(JSON.stringify({ script: test.script }));
 	cellTest.appendChild(iframe);
 	cellLink.appendChild(link);
 	row.appendChild(cellLink);
