@@ -14,6 +14,6 @@ const testCases = createTestCases({
 });
 
 export function test() {
-	return runTests(zipdotjs, "compstream-workers", testCases);
+	return runTests(zipdotjs, "compstream", testCases);
 }
 

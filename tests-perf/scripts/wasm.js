@@ -14,5 +14,5 @@ const testCases = createTestCases({
 });
 
 export function test() {
-	return runTests(zipdotjs, "wasm-workers", testCases);
+	return runTests(zipdotjs, "wasm", testCases);
 }

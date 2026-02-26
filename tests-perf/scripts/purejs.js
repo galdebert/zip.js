@@ -18,5 +18,5 @@ const testCases = createTestCases({
 });
 
 export function test() {
-	return runTests(zipdotjs, "purejs-workers", testCases);
+	return runTests(zipdotjs, "purejs", testCases);
 }

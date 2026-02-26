@@ -72,6 +72,14 @@ const TestCase = {
 		const con = testCase.concurrency.toString().padStart(2);
 		return `${name} useCompressionStream=${nat} useWebWorkers=${use} concurrency=${con}`;
 	},
+
+	/** @param {TestCase} testCase */
+	toStr_concur_only: (testCase) => {
+		const name = `${testCase.entryCount} x ${testCase.entrySize / (1024 * 1024)}MiB`;
+		const con = testCase.concurrency.toString().padStart(2);
+		return `${name} concurrency=${con}`;
+	},
+
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -103,7 +111,7 @@ export async function testPerf(testCfg, testCases, log) {
 
 		if (!doRunUnzip) {
 			const zip_sec = (zip_dt / 1000).toFixed(2);
-			const result = `${TestCase.toStr(testCase)}: zip=${zip_sec}s`;
+			const result = `${TestCase.toStr_concur_only(testCase)}: zip=${zip_sec}s`;
 			log.push(result);
 			continue;
 		}
@@ -124,7 +132,7 @@ export async function testPerf(testCfg, testCases, log) {
 		const zip_sec = (zip_dt / 1000).toFixed(2);
 		const unzip_sec = (unzip_dt / 1000).toFixed(2);
 		const zippedMiB = (zippedByteLength / (1024 * 1024)).toFixed(2);
-		const result = `${TestCase.toStr(testCase)}: zip=${zip_sec}s unzip=${unzip_sec}s size=${zippedMiB}MiB`;
+		const result = `${TestCase.toStr_concur_only(testCase)}: zip=${zip_sec}s unzip=${unzip_sec}s size=${zippedMiB}MiB`;
 		log.push(result);
 	}
 }
@@ -381,8 +389,9 @@ export function logConfigURIs() {
 export async function runTests(zipdotjs, name, testCases) {
 	/** @type {string[]} */
 	const log = [];
-	log.push(`------------------ ${name} ------------------`);
-	log.push(logConfigURIs());
+	log.push(name);
+
+	//log.push(logConfigURIs());
 	
 	await testPerf(
 		{

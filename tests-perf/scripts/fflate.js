@@ -29,5 +29,5 @@ const testCases = createTestCases({
 });
 
 export function test() {
-	return runTests(zipdotjs, "fflate-workers", testCases);
+	return runTests(zipdotjs, "fflate", testCases);
 }
