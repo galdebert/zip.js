@@ -1,8 +1,11 @@
-/* global document, location, addEventListener */
+/* global document, location, addEventListener, URL */
 
 // Open `index.html` in a browser to run this file
 
-import tests from "./tests-data.js";
+const params = new URL(import.meta.url).searchParams;
+const test_param = params.get("test");
+const tests = [{ title: test_param, script: `./${test_param}.js` },];
+
 
 const table = document.createElement("table");
 const MAX_TESTS = 1; // max test count running concurrently. Must be 1 when running perf tests
@@ -41,7 +44,7 @@ function addTest(test) {
 	link.textContent = test.title;
 	link.target = test.script;
 	row.dataset.script = test.script;
-	link.href = iframe.src = "/tests-perf/all/loader.html#" + encodeURIComponent(JSON.stringify({ script: test.script }));
+	link.href = iframe.src = "/tests-perf/scripts/loader.html#" + encodeURIComponent(JSON.stringify({ script: test.script }));
 	cellTest.appendChild(iframe);
 	cellLink.appendChild(link);
 	row.appendChild(cellLink);

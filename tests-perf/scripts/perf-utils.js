@@ -1,8 +1,10 @@
 /* global Blob */
 // @ts-check
 
+import { getConfiguration } from "../../lib/core/configuration.js";
+
 // eslint-disable-next-line no-console
-const console_log = console.log;
+export const console_log = console.log;
 
 /**
  *
@@ -20,7 +22,7 @@ const console_log = console.log;
  *   entrySize: number,
  *   entryCount: number,
  *   useWebWorkers: boolean,
- *   maxWorkers: number,
+ *   concurrency: number,
  *   useCompressionStream: boolean,
  *   chunkSize: number|undefined,
  *   level: number|undefined,
@@ -32,7 +34,6 @@ const console_log = console.log;
  *
  * @typedef {{
  *   zipdotjs: typeof import("../../index.js"),
- *   name: string
  *   doRunUnzip: boolean
  * }} TestCfg
  */
@@ -68,8 +69,8 @@ const TestCase = {
 		const name = `${testCase.entryCount} x ${testCase.entrySize / (1024 * 1024)}MiB`;
 		const nat = testCase.useCompressionStream.toString().padEnd(5);
 		const use = testCase.useWebWorkers.toString().padEnd(5);
-		const max = testCase.maxWorkers.toString().padStart(2);
-		return `${name} useCompressionStream=${nat} useWebWorkers=${use} maxWorkers=${max}`;
+		const con = testCase.concurrency.toString().padStart(2);
+		return `${name} useCompressionStream=${nat} useWebWorkers=${use} concurrency=${con}`;
 	},
 };
 
@@ -77,12 +78,11 @@ const TestCase = {
 /**
  * @param {TestCfg} testCfg
  * @param {TestCase[]} testCases
+ * @param {string[]} log
+ * @return Promise<void>
  */
-export async function testPerf(testCfg, testCases) {
-	const { zipdotjs, name, doRunUnzip } = testCfg;
-
-	console_log(`------------------ ${name} ------------------`); // prettier-ignore
-	//console_log(`navigator.hardwareConcurrency = ${globalThis?.navigator?.hardwareConcurrency}`);
+export async function testPerf(testCfg, testCases, log) {
+	const { zipdotjs, doRunUnzip } = testCfg;
 
 	for (const testCase of testCases) {
 		TestCase.check(testCase);
@@ -103,8 +103,8 @@ export async function testPerf(testCfg, testCases) {
 
 		if (!doRunUnzip) {
 			const zip_sec = (zip_dt / 1000).toFixed(2);
-			const result = `${name} ${TestCase.toStr(testCase)}: zip=${zip_sec}s`;
-			console_log(result);
+			const result = `${TestCase.toStr(testCase)}: zip=${zip_sec}s`;
+			log.push(result);
 			continue;
 		}
 
@@ -125,7 +125,7 @@ export async function testPerf(testCfg, testCases) {
 		const unzip_sec = (unzip_dt / 1000).toFixed(2);
 		const zippedMiB = (zippedByteLength / (1024 * 1024)).toFixed(2);
 		const result = `${TestCase.toStr(testCase)}: zip=${zip_sec}s unzip=${unzip_sec}s size=${zippedMiB}MiB`;
-		console_log(result);
+		log.push(result);
 	}
 }
 
@@ -302,16 +302,16 @@ function createWriter(zipdotjs, outputType) {
 
 //--------------------------------------------------------------------------------------------------
 /** @type TestCase */
-export const baseTestCase20x20 = {
+export const baseTestCase = {
 	// in out
-	entrySize: 1024 * 1024 * 20,
+	entrySize: 1024 * 1024 * 5,
 	entryCount: 20,
 	inputType: undefined, // "Uint8Array" | "Blob",  undefined means "Uint8Array"
 	outputType: undefined, // "Uint8Array" | "Blob",  undefined means "Uint8Array"
 
 	// configure
 	useWebWorkers: true,
-	maxWorkers: 1,
+	concurrency: 1,
 	useCompressionStream: true,
 	chunkSize: undefined,
 
@@ -326,7 +326,7 @@ export const baseTestCase20x20 = {
  *   baseTestCase: TestCase,
  *   useCompressionStreams: boolean[],
  *   useWebWorkerss: boolean[],
- *   maxWorkerss: number[],
+ *   concurrencies: number[],
  * }} CreateTestCasesOpts
  */
 
@@ -339,19 +339,19 @@ export function createTestCases({
 	baseTestCase,
 	useCompressionStreams,
 	useWebWorkerss,
-	maxWorkerss,
+	concurrencies,
 }) {
-	/** @type TestCase[] */
+	/** @type {TestCase[]} */
 	const testCases = [];
 
 	for (let useCompressionStream of useCompressionStreams) {
 		for (let useWebWorkers of useWebWorkerss) {
-			for (let maxWorkers of maxWorkerss) {
+			for (let concurrency of concurrencies) {
 				/** @type TestCase */
 				const testCase = {
 					...baseTestCase,
 					useWebWorkers,
-					maxWorkers,
+					concurrency,
 					useCompressionStream,
 				};
 				testCases.push(testCase);
@@ -360,4 +360,38 @@ export function createTestCases({
 	}
 
 	return testCases;
+}
+
+//--------------------------------------------------------------------------------------------------
+/** @returns {string} */
+export function logConfigURIs() {
+	/** @type {any} */
+	const c = getConfiguration();
+	const wasmURI = typeof c.wasmURI === "function" ? c.wasmURI().slice(0, 60) + "...": c.wasmURI;
+	const workerURI = typeof c.workerURI === "function" ? c.workerURI().slice(0, 60) + "...": c.workerURI;
+	return JSON.stringify({wasmURI, workerURI}, null, 2);
+}
+
+//--------------------------------------------------------------------------------------------------
+/**
+ * @param {any} zipdotjs
+ * @param {string} name
+ * @param {TestCase[]} testCases
+ * @returns Promise<void>
+ */
+export async function runTests(zipdotjs, name, testCases) {
+	/** @type {string[]} */
+	const log = [];
+	log.push(`------------------ ${name} ------------------`);
+	log.push(logConfigURIs());
+	
+	await testPerf(
+		{
+			zipdotjs,
+			doRunUnzip: false,
+		},
+		testCases,
+		log
+	);
+	console_log(log.join("\n"));
 }

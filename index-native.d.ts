@@ -180,6 +180,12 @@ interface FileSystemHandleLike {}
  * @see {@link https://streams.spec.whatwg.org/#generictransformstream|specification}
  */
 declare class TransformStreamLike {
+	// added because the code calls
+	// new CompressionStream(      format, { level, chunkSize })
+	// new CompressionStreamZlib(  format, { level, chunkSize })
+	// new DecompressionStream(    format, { chunkSize, deflate64 })
+	// new DecompressionStreamZlib(format, { chunkSize, deflate64 })
+	constructor(format: string, options?: any);
 	/**
 	 * The readable stream.
 	 */
