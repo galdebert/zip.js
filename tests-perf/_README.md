@@ -23,3 +23,17 @@ useWebWorkers
 How do worker threads and libuv threadpool work together on Node.js?
 Worker threads run a separate Node instance (separate libuv loop), so libuv's threadpool is created per worker.
 UV_THREADPOOL_SIZE determines the size for each worker's pool.
+
+
+
+
+//
+// using both
+// - import * as zipdotjs from "../../index.js";
+// - import * as zipdotjs from "../../index-native.js";
+// because 
+// - their top level code will interfere
+// - tests are not ran in isolation
+// - modules are loaded ONCE so the top level init code is NOT re-executed
+// - ../../index.js and ../../index-native.js both have some init code: configureWebWorker(configure);
+// 

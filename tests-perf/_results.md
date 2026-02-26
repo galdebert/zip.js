@@ -10,6 +10,8 @@
 20 x 5MiB useCompressionStream=true  useWebWorkers=false concurrency= 8: zip=3.09s
 
 
+
+
 ------------------ compstream-workers ------------------
 {
   "wasmURI": "data:application/wasm;base64,AGFzbQEAAAABRQtgAX8Bf2ACf38AYAJ...",

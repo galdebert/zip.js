@@ -10,7 +10,7 @@ const testCases = createTestCases({
 	baseTestCase,
 	useCompressionStream: false,
 	useWebWorkers: true,
-	concurrencies: [1, 4, 8],
+	concurrency: [1, 2, 4, 8],
 });
 
 export function test() {

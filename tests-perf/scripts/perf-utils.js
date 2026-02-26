@@ -242,13 +242,13 @@ async function unzip(zipdotjs, testCase, zipped) {
 //--------------------------------------------------------------------------------------------------
 /**
  * @param {Zipdotjs} zipdotjs
- * @param {Configuration} testCase
+ * @param {TestCase} testCase
  */
 function configure(zipdotjs, testCase) {
 	zipdotjs.configure({
-		useWebWorkers: testCase.useWebWorkers,
-		maxWorkers: testCase.maxWorkers,
 		useCompressionStream: testCase.useCompressionStream,
+		useWebWorkers: testCase.useWebWorkers,
+		maxWorkers: testCase.concurrency,
 		chunkSize: testCase.chunkSize,
 	});
 }
@@ -310,9 +310,10 @@ export const baseTestCase = {
 	outputType: undefined, // "Uint8Array" | "Blob",  undefined means "Uint8Array"
 
 	// configure
+	useCompressionStream: true,
 	useWebWorkers: true,
 	concurrency: 1,
-	useCompressionStream: true,
+
 	chunkSize: undefined,
 
 	// ZipWriter ctr
@@ -326,7 +327,7 @@ export const baseTestCase = {
  *   baseTestCase: TestCase,
  *   useCompressionStream: boolean,
  *   useWebWorkers: boolean,
- *   concurrencies: number[],
+ *   concurrency: number[],
  * }} CreateTestCasesOpts
  */
 
@@ -339,7 +340,7 @@ export function createTestCases({
 	baseTestCase,
 	useCompressionStream,
 	useWebWorkers,
-	concurrencies,
+	concurrency: concurrencies,
 }) {
 	/** @type {TestCase[]} */
 	const testCases = [];
@@ -349,9 +350,9 @@ export function createTestCases({
 		/** @type TestCase */
 		const testCase = {
 			...baseTestCase,
+			useCompressionStream,
 			useWebWorkers,
 			concurrency,
-			useCompressionStream,
 		};
 		testCases.push(testCase);
 	}
