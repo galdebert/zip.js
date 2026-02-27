@@ -19,7 +19,8 @@ export const console_log = console.log;
  * @typedef {{
  *   inputType: 'Uint8Array'|'Blob'|undefined,
  *   outputType: 'Uint8Array'|'Blob'|undefined,
- *   entrySize: number,
+ *   name: string,
+ *   entrySize: (idx: number) => number,
  *   entryCount: number,
  *   useWebWorkers: boolean,
  *   concurrency: number,
@@ -66,18 +67,17 @@ const TestCase = {
 
 	/** @param {TestCase} testCase */
 	toStr: (testCase) => {
-		const name = `${testCase.entryCount} x ${testCase.entrySize / (1024 * 1024)}MiB`;
 		const nat = testCase.useCompressionStream.toString().padEnd(5);
 		const use = testCase.useWebWorkers.toString().padEnd(5);
 		const con = testCase.concurrency.toString().padStart(2);
-		return `${name} useCompressionStream=${nat} useWebWorkers=${use} concurrency=${con}`;
+		return `${testCase.name} useCompressionStream=${nat} useWebWorkers=${use} concurrency=${con}`;
 	},
 
 	/** @param {TestCase} testCase */
 	toStr_concur_only: (testCase) => {
-		const name = `${testCase.entryCount} x ${testCase.entrySize / (1024 * 1024)}MiB`;
+
 		const con = testCase.concurrency.toString().padStart(2);
-		return `${name} concurrency = ${con}`;
+		return `${testCase.name} concurrency = ${con}`;
 	},
 
 };
@@ -97,7 +97,7 @@ export async function testPerf(zipdotjs, testCases, log) {
 		/** @type {Input[]} */
 		const inputs = [];
 		for (let i = 0; i < testCase.entryCount; i++) {
-			const byteSize = testCase.entrySize;
+			const byteSize = testCase.entrySize(i);
 			inputs.push({
 				name: `entry #${i + 1}`,
 				data: getBlobOrU8(byteSize, testCase.inputType),
@@ -269,8 +269,9 @@ function createWriter(zipdotjs, outputType) {
 /** @type TestCase */
 export const baseTestCase = {
 	// in out
-	entrySize: 1024 * 1024 * 5,
+	name: "32 x 5MiB",
 	entryCount: 32,
+	entrySize: () => 1024 * 1024 * 5,
 	inputType: undefined, // "Uint8Array" | "Blob",  undefined means "Uint8Array"
 	outputType: undefined, // "Uint8Array" | "Blob",  undefined means "Uint8Array"
 
@@ -283,10 +284,25 @@ export const baseTestCase = {
 
 	// ZipWriter ctr
 	level: 6,
-	keepOrder: undefined,
+	keepOrder: true, // true by default
 	bufferedWrite: undefined,
 
 	unzip: true,
+};
+
+
+export const smallFirstTestCase = {
+	...baseTestCase,
+	name: "small-first",
+	entryCount: 32,
+	entrySize: (/** @type {number} */ idx) => (idx === 31 ? 32 : 1) * 1024*1024 //(1024 * 1024 * (idx + 1)) / 2,
+};
+
+export const bigFirstTestCase = {
+	...baseTestCase,
+	name: "big-first",
+	entryCount: 32,
+	entrySize: (/** @type {number} */ idx) => (idx === 0 ? 32 : 1) * 1024*1024 // (1024 * 1024 * (32 - idx)) / 2,
 };
 
 /**
@@ -295,6 +311,7 @@ export const baseTestCase = {
  *   useCompressionStream: boolean,
  *   useWebWorkers: boolean,
  *   concurrency: number[],
+ *   keepOrder: boolean,
  *   unzip: boolean,
  * }} CreateTestCasesOpts
  */
@@ -309,6 +326,7 @@ export function createTestCases({
 	useCompressionStream,
 	useWebWorkers,
 	concurrency: concurrencies,
+	keepOrder,
 	unzip,
 }) {
 	/** @type {TestCase[]} */
@@ -322,6 +340,7 @@ export function createTestCases({
 			useCompressionStream,
 			useWebWorkers,
 			concurrency,
+			keepOrder,
 			unzip,
 		};
 		testCases.push(testCase);
@@ -353,6 +372,6 @@ export async function runTests(zipdotjs, name, testCases) {
 	const log = [];
 	log.push(name);
 	//log.push(logConfigURIs());
-	await testPerf(zipdotjs, testCases, log	);
+	await testPerf(zipdotjs, testCases, log);
 	console_log(log.join("\n"));
 }

@@ -109,3 +109,41 @@ on NODEJS, comstream and compstream-noworkers uses the internal uv_thread_pool=4
 so each worker has built-in 4x concurrency.
 
 on NODEJS, using **compstream-noworkers with concurrency=4** seems the fastest and simplest.
+
+
+
+
+# big-first vs small-first
+
+## CHROME
+
+```
+compstream keepOrder false
+small-first concurrency =  2   zip = 2.06 s   unzip = 0.46 s   size = 59.25 MiB
+big-first   concurrency =  2   zip = 2.02 s   unzip = 0.42 s   size = 59.25 MiB
+
+compstream keepOrder true
+small-first concurrency =  2   zip = 1.64 s   unzip = 0.46 s   size = 59.25 MiB
+big-first   concurrency =  2   zip = 1.60 s   unzip = 0.40 s   size = 59.25 MiB
+```
+
+results are strange... small-first vs big-first makes no difference ...
+
+But if we deflate the big first, this should be faster ??
+
+big first
+```
+worker0 |------------------big------------------------|
+worker1 |small|small|small|small|small|small|small|small|
+```
+
+small first
+```
+worker0 |small|small|small|small|------------------big------------------------|
+worker1 |small|small|small|small|
+```
+
+## keepOrder=true is faster
+
+keepOrder=true is faster than keepOrder=false. This is what the doc says, but it's counter intuitive...
+
