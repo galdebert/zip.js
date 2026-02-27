@@ -25,7 +25,7 @@ const testCases = createTestCases({
 	baseTestCase: baseTestCase,
 	useCompressionStream: false,
 	useWebWorkers: true,
-	concurrency: [1, 2, 4, 8],
+	concurrency: [1, 2, 4, 8, 16],
 	unzip: true,
 });
 

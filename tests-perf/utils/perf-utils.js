@@ -77,7 +77,7 @@ const TestCase = {
 	toStr_concur_only: (testCase) => {
 		const name = `${testCase.entryCount} x ${testCase.entrySize / (1024 * 1024)}MiB`;
 		const con = testCase.concurrency.toString().padStart(2);
-		return `${name} concurrency =${con}`;
+		return `${name} concurrency = ${con}`;
 	},
 
 };
@@ -110,7 +110,7 @@ export async function testPerf(zipdotjs, testCases, log) {
 		const zip_sec = (zip_dt / 1000).toFixed(2);
 
 		if (!testCase.unzip) {
-			const result = `${TestCase.toStr_concur_only(testCase)}: zip = ${zip_sec} s`;
+			const result = `${TestCase.toStr_concur_only(testCase)}   zip = ${zip_sec} s`;
 			log.push(result);
 			continue;
 		}
@@ -130,7 +130,7 @@ export async function testPerf(zipdotjs, testCases, log) {
 
 		const unzip_sec = (unzip_dt / 1000).toFixed(2);
 		const zippedMiB = (zippedByteLength / (1024 * 1024)).toFixed(2);
-		const result = `${TestCase.toStr_concur_only(testCase)}: zip = ${zip_sec} s   unzip = ${unzip_sec} s   size = ${zippedMiB} MiB`;
+		const result = `${TestCase.toStr_concur_only(testCase)}   zip = ${zip_sec} s   unzip = ${unzip_sec} s   size = ${zippedMiB} MiB`;
 		log.push(result);
 	}
 }
@@ -270,7 +270,7 @@ function createWriter(zipdotjs, outputType) {
 export const baseTestCase = {
 	// in out
 	entrySize: 1024 * 1024 * 5,
-	entryCount: 20,
+	entryCount: 32,
 	inputType: undefined, // "Uint8Array" | "Blob",  undefined means "Uint8Array"
 	outputType: undefined, // "Uint8Array" | "Blob",  undefined means "Uint8Array"
 
