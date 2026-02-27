@@ -152,8 +152,8 @@ with maxWorkers=2 ...
 
 **worst case order**
 ```
-[1-------------------][3-------][5-------]
-[2]                   [4--]     [6----]
+[1-------------------][3---------][5-------]
+[2]                   [4--]       [6----]
 ```
 
 ### example with 1 big size
@@ -179,9 +179,8 @@ But it's slower for some reason.
 
 ## zip.js improvement ? 
 
-Ideally zip.js should be aable keep compressed buffers (with a param max_pending_byte_size limit).
-
-This would allow to have the best possible usage of workers independently of entry ordering
+Ideally, when `keepOrder=true`, zip.js should be able keep compressed buffers (with a param maxPendingBytes).
+This would allow to have the best possible usage of workers independently of entry ordering.
 
 ```
 [1-------------------][4-----]
@@ -192,3 +191,6 @@ This would allow to have the best possible usage of workers independently of ent
 [1-----------------------------------]
 [-2-][-3-][-4-][-5-][-6-]
 ```
+
+When `keepOrder=false`, it seems maxPendingBytes should not be necessary.
+But I don't really understand how `keepOrder=false` works at the moment
