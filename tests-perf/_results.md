@@ -127,28 +127,68 @@ small-first concurrency =  2   zip = 1.64 s   unzip = 0.46 s   size = 59.25 MiB
 big-first   concurrency =  2   zip = 1.60 s   unzip = 0.40 s   size = 59.25 MiB
 ```
 
-results are strange... small-first vs big-first makes no difference ...
+# how does zip.js maxWorkers (aka concurrency) work
 
-But if we deflate the big first, this should be faster ??
+## when keepOrder = true
 
-big first
+zip.js does NOT keep compressed entries in memory more than maxWorkers.
+zip.js awaits for the entry N to be written to the destination zip before processing entry N+1.
+
+with maxWorkers=2 ...
+
+### example with various sizes
+
+**increasing sizes**
 ```
-worker0 |------------------big------------------------|
-worker1 |small|small|small|small|small|small|small|small|
+[1][3----][5---------]
+[2--][4-------][6-------------------]
 ```
 
-small first
+**decreasing sizes**
 ```
-worker0 |small|small|small|small|------------------big------------------------|
-worker1 |small|small|small|small|
+[1-------------------][3-------][5--]
+[2---------]          [4----]   [6]
 ```
 
-## keepOrder=true is faster
+**worst case order**
+```
+[1-------------------][3-------][5-------]
+[2]                   [4--]     [6----]
+```
 
-keepOrder=true is faster than keepOrder=false. This is what the doc says, but it's counter intuitive...
+### example with 1 big size
+
+**increasing sizes**
+```
+[-1-][-3-][-5-]
+[-2-][-4-][6-----------------------------------]
+```
+
+**decreasing sizes**
+```
+[1-----------------------------------][-3-][-5-]
+[-2-]                                 [-4-][-6-]
+```
 
 
+## when keepOrder = false
+
+This should give zip.js more freedom, so this should be at least faster.
+But it's slower for some reason.
 
 
-big-first   concurrency =  2   zip = 1.74 s   unzip = 0.42 s   size = 59.25 MiB
-small-first concurrency =  2   zip = 1.80 s   unzip = 0.42 s   size = 59.25 MiB
+## zip.js improvement ? 
+
+Ideally zip.js should be aable keep compressed buffers (with a param max_pending_byte_size limit).
+
+This would allow to have the best possible usage of workers independently of entry ordering
+
+```
+[1-------------------][4-----]
+[2---------][3-------][5--][6-]
+```
+
+```
+[1-----------------------------------]
+[-2-][-3-][-4-][-5-][-6-]
+```
