@@ -28,13 +28,13 @@ export const console_log = console.log;
  *   level: number|undefined,
  *   keepOrder: boolean|undefined,
  *   bufferedWrite: boolean|undefined,
+ *   unzip: boolean
  * }} TestCase
  *
  * @typedef {{name: string; data: Uint8Array|Blob}} Input
  *
  * @typedef {{
  *   zipdotjs: typeof import("../../index.js"),
- *   doRunUnzip: boolean
  * }} TestCfg
  */
 
@@ -77,20 +77,19 @@ const TestCase = {
 	toStr_concur_only: (testCase) => {
 		const name = `${testCase.entryCount} x ${testCase.entrySize / (1024 * 1024)}MiB`;
 		const con = testCase.concurrency.toString().padStart(2);
-		return `${name} concurrency=${con}`;
+		return `${name} concurrency =${con}`;
 	},
 
 };
 
 //--------------------------------------------------------------------------------------------------
 /**
- * @param {TestCfg} testCfg
+ * @param {Zipdotjs} zipdotjs
  * @param {TestCase[]} testCases
  * @param {string[]} log
  * @return Promise<void>
  */
-export async function testPerf(testCfg, testCases, log) {
-	const { zipdotjs, doRunUnzip } = testCfg;
+export async function testPerf(zipdotjs, testCases, log) {
 
 	for (const testCase of testCases) {
 		TestCase.check(testCase);
@@ -108,10 +107,10 @@ export async function testPerf(testCfg, testCases, log) {
 		const zip_t0 = Date.now();
 		const zipped = await zip(zipdotjs, testCase, inputs);
 		const zip_dt = Date.now() - zip_t0;
+		const zip_sec = (zip_dt / 1000).toFixed(2);
 
-		if (!doRunUnzip) {
-			const zip_sec = (zip_dt / 1000).toFixed(2);
-			const result = `${TestCase.toStr_concur_only(testCase)}: zip=${zip_sec}s`;
+		if (!testCase.unzip) {
+			const result = `${TestCase.toStr_concur_only(testCase)}: zip = ${zip_sec} s`;
 			log.push(result);
 			continue;
 		}
@@ -129,10 +128,9 @@ export async function testPerf(testCfg, testCases, log) {
 			throw new Error("Unzipped entry count mismatch");
 		}
 
-		const zip_sec = (zip_dt / 1000).toFixed(2);
 		const unzip_sec = (unzip_dt / 1000).toFixed(2);
 		const zippedMiB = (zippedByteLength / (1024 * 1024)).toFixed(2);
-		const result = `${TestCase.toStr_concur_only(testCase)}: zip=${zip_sec}s unzip=${unzip_sec}s size=${zippedMiB}MiB`;
+		const result = `${TestCase.toStr_concur_only(testCase)}: zip = ${zip_sec} s   unzip = ${unzip_sec} s   size = ${zippedMiB} MiB`;
 		log.push(result);
 	}
 }
@@ -287,6 +285,8 @@ export const baseTestCase = {
 	level: 6,
 	keepOrder: undefined,
 	bufferedWrite: undefined,
+
+	unzip: true,
 };
 
 /**
@@ -295,6 +295,7 @@ export const baseTestCase = {
  *   useCompressionStream: boolean,
  *   useWebWorkers: boolean,
  *   concurrency: number[],
+ *   unzip: boolean,
  * }} CreateTestCasesOpts
  */
 
@@ -308,6 +309,7 @@ export function createTestCases({
 	useCompressionStream,
 	useWebWorkers,
 	concurrency: concurrencies,
+	unzip,
 }) {
 	/** @type {TestCase[]} */
 	const testCases = [];
@@ -320,6 +322,7 @@ export function createTestCases({
 			useCompressionStream,
 			useWebWorkers,
 			concurrency,
+			unzip,
 		};
 		testCases.push(testCase);
 	}
@@ -349,16 +352,7 @@ export async function runTests(zipdotjs, name, testCases) {
 	/** @type {string[]} */
 	const log = [];
 	log.push(name);
-
 	//log.push(logConfigURIs());
-
-	await testPerf(
-		{
-			zipdotjs,
-			doRunUnzip: false,
-		},
-		testCases,
-		log
-	);
+	await testPerf(zipdotjs, testCases, log	);
 	console_log(log.join("\n"));
 }

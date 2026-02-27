@@ -12,6 +12,7 @@ const testCases = createTestCases({
 	// on NODEJS it's interesting to test useCompressionStream=true && useWebWorkers=false && concurrency > 1 because it uses the nodejs thread pool (4 threads by default)
 	// on BROWSER, concurrency has not effect
 	concurrency: [8],
+	unzip: true,
 });
 
 export function test() {

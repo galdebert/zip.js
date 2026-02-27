@@ -11,6 +11,7 @@ const testCases = createTestCases({
 	useCompressionStream: true,
 	useWebWorkers: true,
 	concurrency: [1, 2, 4, 8],
+	unzip: true,
 });
 
 export function test() {
