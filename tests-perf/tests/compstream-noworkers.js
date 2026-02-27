@@ -13,6 +13,7 @@ const testCases = createTestCases({
 	// on BROWSER, concurrency has not effect
 	concurrency: [1, 2, 4, 8, 16],
 	keepOrder: true,
+	bufferedWrite: false,
 	unzip: true,
 });
 

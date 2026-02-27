@@ -10,8 +10,9 @@ const testCases = createTestCases({
 	baseTestCase: bigFirstTestCase,
 	useCompressionStream: true,
 	useWebWorkers: true,
-	concurrency: [1, 2, 4, 8, 16],
+	concurrency: [2],
 	keepOrder: true,
+	bufferedWrite: true,
 	unzip: true,
 });
 

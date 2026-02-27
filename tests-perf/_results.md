@@ -147,3 +147,8 @@ worker1 |small|small|small|small|
 
 keepOrder=true is faster than keepOrder=false. This is what the doc says, but it's counter intuitive...
 
+
+
+
+big-first   concurrency =  2   zip = 1.74 s   unzip = 0.42 s   size = 59.25 MiB
+small-first concurrency =  2   zip = 1.80 s   unzip = 0.42 s   size = 59.25 MiB

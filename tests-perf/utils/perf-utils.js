@@ -27,8 +27,8 @@ export const console_log = console.log;
  *   useCompressionStream: boolean,
  *   chunkSize: number|undefined,
  *   level: number|undefined,
- *   keepOrder: boolean|undefined,
- *   bufferedWrite: boolean|undefined,
+ *   keepOrder: boolean,
+ *   bufferedWrite: boolean,
  *   unzip: boolean
  * }} TestCase
  *
@@ -285,7 +285,11 @@ export const baseTestCase = {
 	// ZipWriter ctr
 	level: 6,
 	keepOrder: true, // true by default
-	bufferedWrite: undefined,
+
+	// `true` to write entry data in a buffer before appending it to the zip file.
+	// `bufferedWrite` is automatically set to `true` when compressing more than one entry in parallel.
+	// @defaultValue false
+	bufferedWrite: false,
 
 	unzip: true,
 };
@@ -312,6 +316,7 @@ export const bigFirstTestCase = {
  *   useWebWorkers: boolean,
  *   concurrency: number[],
  *   keepOrder: boolean,
+ *   bufferedWrite: boolean,
  *   unzip: boolean,
  * }} CreateTestCasesOpts
  */

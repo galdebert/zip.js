@@ -12,6 +12,7 @@ const testCases = createTestCases({
 	useWebWorkers: true,
 	concurrency: [2],
 	keepOrder: true,
+	bufferedWrite: true,
 	unzip: true,
 });
 
