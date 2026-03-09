@@ -11,12 +11,12 @@ const testCases = createTestCases({
 	useWebWorkers: false,
 	// on NODEJS it's interesting to test useCompressionStream=true && useWebWorkers=false && concurrency > 1 because it uses the nodejs thread pool (4 threads by default)
 	// on BROWSER, concurrency has not effect
-	concurrency: [2],
-	keepOrder: true,
+	concurrency: [1, 2, 4, 8, 16],
+	keepOrder: false,
 	bufferedWrite: true,
 	unzip: true,
 });
 
 export function test() {
-	return runTests(zipdotjs, "compstream-noworkers-small-first", testCases);
+	return runTests(zipdotjs, "compstream-noworkers-small-first-noorder", testCases);
 }

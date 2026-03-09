@@ -41,7 +41,7 @@
     "test-deno": "cd ./tests && deno test --allow-read ./deno-runner.js",
     "test-node": "cd ./tests && node ./node-runner.js",
 
-    "test-node-perf-all": "cd ./tests-perf && node ./node-run.js compstream-noworkers && node ./node-run.js compstream && node ./node-run.js purejs && node ./node-run.js wasm",
+    "test-node-perf-all": "cd ./tests-perf && node ./node-run.js compstream-noworkers && node ./node-run.js compstream-workers && node ./node-run.js purejs && node ./node-run.js wasm",
     "test-node-perf-big-first": "cd ./tests-perf && node ./node-run.js compstream-noworkers-small-first && node ./node-run.js compstream-noworkers-big-first",
 
     "test-node-perf": "cd ./tests-perf && node ./node-run.js",

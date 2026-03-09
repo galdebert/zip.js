@@ -115,6 +115,8 @@ on NODEJS, using **compstream-noworkers with concurrency=4** seems the fastest a
 
 # big-first vs small-first
 
+
+
 ## CHROME
 
 ```
@@ -158,39 +160,46 @@ with maxWorkers=2 ...
 
 ### example with 1 big size
 
-**increasing sizes**
+**small-first**
 ```
 [-1-][-3-][-5-]
 [-2-][-4-][6-----------------------------------]
 ```
 
-**decreasing sizes**
+**big-first**
 ```
 [1-----------------------------------][-3-][-5-]
 [-2-]                                 [-4-][-6-]
 ```
 
 
-## when keepOrder = false
+## perf tests with 2.8.24
 
-This should give zip.js more freedom, so this should be at least faster.
-But it's slower for some reason.
-
-
-## zip.js improvement ? 
-
-Ideally, when `keepOrder=true`, zip.js should be able keep compressed buffers (with a param maxPendingBytes).
-This would allow to have the best possible usage of workers independently of entry ordering.
-
+ 
 ```
-[1-------------------][4-----]
-[2---------][3-------][5--][6-]
+ 1 big   [-------------------------------------------------------------------------------------------]
+31 small [-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-]    
+
+compstream-workers-small-first-order
+small-first concurrency =  1   zip = 2.07 s     smalls   then big = 1    + 1
+small-first concurrency =  2   zip = 1.50 s     smalls/2 then big = 0.5  + 1
+small-first concurrency =  4   zip = 1.23 s     smalls/4 then big = 0.25 + 1
+
+compstream-workers-small-first-noorder
+small-first concurrency =  1   zip = 2.08 s     smalls   then big = 1    + 1
+small-first concurrency =  2   zip = 1.49 s     smalls/2 then big = 0.5  + 1
+small-first concurrency =  4   zip = 1.24 s     smalls/4 then big = 0.25 + 1
+
+
+compstream-workers-big-first-order
+big-first concurrency =  1   zip = 1.99 s       big then smalls   = 1 + 1
+big-first concurrency =  2   zip = 1.46 s       big then smalls/2 = 1 + 0.5
+big-first concurrency =  4   zip = 1.29 s       big then smalls/4 = 1 + 0.25
+
+compstream-workers-big-first-noorder
+big-first concurrency =  1   zip = 2.02 s       big then smalls = 1 + 1
+big-first concurrency =  2   zip = 1.08 s       big and smalls in // = 1
+big-first concurrency =  4   zip = 1.01 s       big and smalls in // = 1
 ```
 
-```
-[1-----------------------------------]
-[-2-][-3-][-4-][-5-][-6-]
-```
 
-When `keepOrder=false`, it seems maxPendingBytes should not be necessary.
-But I don't really understand how `keepOrder=false` works at the moment

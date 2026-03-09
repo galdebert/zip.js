@@ -1,22 +1,22 @@
 // @ts-check
 
-import { createTestCases, runTests, smallFirstTestCase } from "../utils/perf-utils.js";
+import { bigFirstTestCase, createTestCases, runTests } from "../utils/perf-utils.js";
 
 // default init zipdotjs is ./lib/zip-fs-wasm.js
 import * as zipdotjs from "../../index.js";
 
 /** @type {import("../utils/perf-utils.js").TestCase[]} */
 const testCases = createTestCases({
-	baseTestCase: smallFirstTestCase,
+	baseTestCase: bigFirstTestCase,
 	useCompressionStream: true,
 	useWebWorkers: true,
-	concurrency: [2],
+	concurrency: [1, 2, 4, 8, 16],
 	keepOrder: true,
 	bufferedWrite: true,
 	unzip: true,
 });
 
 export function test() {
-	return runTests(zipdotjs, "compstream-small-first", testCases);
+	return runTests(zipdotjs, "compstream-workers-big-first-order", testCases);
 }
 

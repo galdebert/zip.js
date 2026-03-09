@@ -294,19 +294,20 @@ export const baseTestCase = {
 	unzip: true,
 };
 
-
+/** [1, 1, ... , 1, 31] */
 export const smallFirstTestCase = {
 	...baseTestCase,
 	name: "small-first",
 	entryCount: 32,
-	entrySize: (/** @type {number} */ idx) => (idx === 31 ? 32 : 1) * 1024*1024 //(1024 * 1024 * (idx + 1)) / 2,
+	entrySize: (/** @type {number} */ idx) => (idx === 31 ? 31 : 1) * 1024*1024 //(1024 * 1024 * (idx + 1)) / 2,
 };
 
+/** [31, 1, 1 1..., 1] */
 export const bigFirstTestCase = {
 	...baseTestCase,
 	name: "big-first",
 	entryCount: 32,
-	entrySize: (/** @type {number} */ idx) => (idx === 0 ? 32 : 1) * 1024*1024 // (1024 * 1024 * (32 - idx)) / 2,
+	entrySize: (/** @type {number} */ idx) => (idx === 0 ? 31 : 1) * 1024*1024 // (1024 * 1024 * (32 - idx)) / 2,
 };
 
 /**
