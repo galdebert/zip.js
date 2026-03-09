@@ -40,9 +40,21 @@
     "build-doc-markdown": "npx typedoc --plugin typedoc-plugin-markdown --out ./docs",
     "test-deno": "cd ./tests && deno test --allow-read ./deno-runner.js",
     "test-node": "cd ./tests && node ./node-runner.js",
+
+    "test-node-perf-all": "cd ./tests-perf && node ./node-run.js compstream-noworkers && node ./node-run.js compstream && node ./node-run.js purejs && node ./node-run.js wasm",
+    "test-node-perf-big-first": "cd ./tests-perf && node ./node-run.js compstream-noworkers-small-first && node ./node-run.js compstream-noworkers-big-first",
+
+    "test-node-perf": "cd ./tests-perf && node ./node-run.js",
+    "test-node-perf-uv1": "cd ./tests-perf && UV_THREADPOOL_SIZE=1 node ./node-run.js",
+    "test-node-perf-uv2": "cd ./tests-perf && UV_THREADPOOL_SIZE=2 node ./node-run.js",
+    "test-node-perf-uv4": "cd ./tests-perf && UV_THREADPOOL_SIZE=4 node ./node-run.js",
+    "test-node-perf-uv8": "cd ./tests-perf && UV_THREADPOOL_SIZE=8 node  ./node-run.js",
+    "test-node-perf-inspect": "cd ./tests-perf && node --inspect ./node-run.js",
+
     "test-bun": "cd ./tests && bun test ./bun-runner.js",
     "test-firefox": "firefox http://localhost:8081/tests/ & npx http-server -p=8081 & wait $!",
-    "test-chrome": "google-chrome http://localhost:8081/tests/ & npx http-server -p=8081 & wait $!"
+    "test-chrome": "google-chrome http://localhost:8081/tests/ & npx http-server -p=8081 & wait $!",
+    "test-browser": "npx http-server -p=8081 -c-1"
   },
   "main": "./index.cjs",
   "module": "./index.js",
@@ -160,6 +172,7 @@
     "http-server": "^14.1.1",
     "rollup": "^4.59.0",
     "typedoc": "^0.28.17",
-    "typedoc-plugin-markdown": "^4.10.0"
+    "typedoc-plugin-markdown": "^4.10.0",
+    "web-worker": "1.5.0"
   }
 }
