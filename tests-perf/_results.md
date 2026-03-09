@@ -175,7 +175,6 @@ with maxWorkers=2 ...
 
 ## perf tests with 2.8.24
 
- 
 ```
  1 big   [-------------------------------------------------------------------------------------------]
 31 small [-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-][-]    
@@ -190,7 +189,6 @@ small-first concurrency =  1   zip = 2.08 s     smalls   then big = 1    + 1
 small-first concurrency =  2   zip = 1.49 s     smalls/2 then big = 0.5  + 1
 small-first concurrency =  4   zip = 1.24 s     smalls/4 then big = 0.25 + 1
 
-
 compstream-workers-big-first-order
 big-first concurrency =  1   zip = 1.99 s       big then smalls   = 1 + 1
 big-first concurrency =  2   zip = 1.46 s       big then smalls/2 = 1 + 0.5
@@ -198,8 +196,8 @@ big-first concurrency =  4   zip = 1.29 s       big then smalls/4 = 1 + 0.25
 
 compstream-workers-big-first-noorder
 big-first concurrency =  1   zip = 2.02 s       big then smalls = 1 + 1
-big-first concurrency =  2   zip = 1.08 s       big and smalls in // = 1
-big-first concurrency =  4   zip = 1.01 s       big and smalls in // = 1
+big-first concurrency =  2   zip = 1.08 s       big and smalls in // = max(1, 1) = 1
+big-first concurrency =  4   zip = 1.01 s       big and smalls in // = max(1, 0.5) = 1
 ```
 
 
